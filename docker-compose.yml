@@ -1,0 +1,8 @@
+version: '3'
+services:
+  go:
+    image: golang:latest
+    volumes:
+      - .:/go/src/app
+    working_dir: /go/src/app
+    command: sh -c "tail -f /dev/null"
