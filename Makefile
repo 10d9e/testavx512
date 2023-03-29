@@ -1,8 +1,8 @@
 build:
-	go build -o testcommp
+	go build -o testavx512
 
 run:
 	go run main.go
 
 clean:
-	rm ./testcommp
+	rm ./testavx512
