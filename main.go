@@ -29,7 +29,7 @@ func main() {
 		sha256native.Sum256([]byte("hello world"))
 	}
 	elapsed := time.Since(start)
-	fmt.Printf("Normal Elapsed time: %s\n", elapsed)
+	fmt.Printf("Native Elapsed time: %s\n", elapsed)
 
 	server := sha256simd.NewAvx512Server()
 	h512 := sha256simd.NewAvx512(server)
@@ -47,7 +47,7 @@ func main() {
 	start = time.Now()
 	// Set up a pool of 10 goroutines
 	poolSize := 10
-	jobs := make(chan string, poolSize)
+	jobs := make(chan []byte, poolSize)
 	results := make(chan [32]byte, poolSize)
 
 	var wg sync.WaitGroup
@@ -63,17 +63,19 @@ func main() {
 	}
 
 	// Enqueue the messages to hash
-	messages := []string{"hello", "world", "foo", "bar", "baz", "qux", "foofoo", "barbar", "bazbaz", "quxqux"}
+	//messages := []string{"hello", "world", "foo", "bar", "baz", "qux", "foofoo", "barbar", "bazbaz", "quxqux"}
 	go func() {
-		for _, msg := range messages {
-			jobs <- msg
+
+		for i := 0; i < iterations; i++ {
+			// sha256native.Sum256([]byte("hello world"))
+			jobs <- []byte("hello world")
 		}
 		close(jobs)
 	}()
 
 	// Collect the results
 	var hashes [][32]byte
-	for i := 0; i < len(messages); i++ {
+	for i := 0; i < iterations; i++ {
 		hashes = append(hashes, <-results)
 	}
 
@@ -81,6 +83,6 @@ func main() {
 	wg.Wait()
 
 	elapsed = time.Since(start)
-	fmt.Printf("AVX512 Elapsed time: %s\n", elapsed)
+	fmt.Printf("Native Elapsed time: %s\n", elapsed)
 
 }
