@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	sha256simd "github.com/minio/sha256-simd"
@@ -38,6 +39,47 @@ func main() {
 		h512.Write([]byte("hello world"))
 		h512.Sum([]byte{})
 	}
+	elapsed = time.Since(start)
+	fmt.Printf("AVX512 Elapsed time: %s\n", elapsed)
+
+	// concurrent
+
+	start = time.Now()
+	// Set up a pool of 10 goroutines
+	poolSize := 10
+	jobs := make(chan string, poolSize)
+	results := make(chan [32]byte, poolSize)
+
+	var wg sync.WaitGroup
+	for i := 0; i < poolSize; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for msg := range jobs {
+				hash := sha256native.Sum256([]byte(msg))
+				results <- hash
+			}
+		}()
+	}
+
+	// Enqueue the messages to hash
+	messages := []string{"hello", "world", "foo", "bar", "baz", "qux", "foofoo", "barbar", "bazbaz", "quxqux"}
+	go func() {
+		for _, msg := range messages {
+			jobs <- msg
+		}
+		close(jobs)
+	}()
+
+	// Collect the results
+	var hashes [][32]byte
+	for i := 0; i < len(messages); i++ {
+		hashes = append(hashes, <-results)
+	}
+
+	// Wait for all goroutines to finish
+	wg.Wait()
+
 	elapsed = time.Since(start)
 	fmt.Printf("AVX512 Elapsed time: %s\n", elapsed)
 
