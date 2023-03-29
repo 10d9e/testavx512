@@ -33,7 +33,7 @@ func main() {
 	server := sha256simd.NewAvx512Server()
 	h512 := sha256simd.NewAvx512(server)
 
-	start := time.Now()
+	start = time.Now()
 	for i := 0; i < iterations; i++ {
 		h512.Write([]byte("hello world"))
 		h512.Sum([]byte{})
