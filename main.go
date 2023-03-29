@@ -8,7 +8,7 @@ import (
 
 	sha256simd "github.com/minio/sha256-simd"
 
-	"crypto/sha256"
+	sha256native "crypto/sha256"
 )
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 
 	start := time.Now()
 	for i := 0; i < iterations; i++ {
-		sha256.Sum256([]byte("hello world"))
+		sha256native.Sum256([]byte("hello world"))
 	}
 	elapsed := time.Since(start)
 	fmt.Printf("Normal Elapsed time: %s\n", elapsed)
